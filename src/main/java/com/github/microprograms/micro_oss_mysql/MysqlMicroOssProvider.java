@@ -144,7 +144,9 @@ public class MysqlMicroOssProvider implements MicroOssProvider {
     @Override
     public Transaction beginTransaction() throws MicroOssException {
         try {
-            return new MysqlTransaction(getConnection());
+            Connection connection = getConnection();
+            connection.setAutoCommit(false);
+            return new MysqlTransaction(connection);
         } catch (Exception e) {
             throw new MicroOssException(e);
         }
