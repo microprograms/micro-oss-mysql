@@ -18,7 +18,7 @@ public class TableColumnDefinition implements TableElementDefinition {
         case long_type:
             return "bigint";
         case string_type:
-            return isPrimaryKey ? "varchar(255)" : "text";
+            return isPrimaryKey ? "varchar(99)" : "text";
         default:
             return null;
         }
