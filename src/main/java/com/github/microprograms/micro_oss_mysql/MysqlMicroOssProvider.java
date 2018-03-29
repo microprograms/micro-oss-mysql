@@ -40,7 +40,7 @@ public class MysqlMicroOssProvider implements MicroOssProvider {
         }
     }
 
-    private Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         return DriverManager.getConnection(config.getUrl(), config.getUser(), config.getPassword());
     }
 
