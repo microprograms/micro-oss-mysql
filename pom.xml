@@ -5,7 +5,7 @@
 
     <groupId>com.github.microprograms</groupId>
     <artifactId>micro-oss-mysql</artifactId>
-    <version>1.2.3.r3</version>
+    <version>1.2.4</version>
     <packaging>jar</packaging>
 
     <name>micro-oss-mysql</name>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>com.github.microprograms</groupId>
             <artifactId>micro-oss-core</artifactId>
-            <version>1.2.3</version>
+            <version>1.2.4</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
