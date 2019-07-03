@@ -15,6 +15,7 @@ import com.github.microprograms.micro_oss_core.Transaction;
 import com.github.microprograms.micro_oss_core.exception.MicroOssException;
 import com.github.microprograms.micro_oss_core.model.Entity;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition;
+import com.github.microprograms.micro_oss_core.model.TableDefinition;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.DeleteCommand;
@@ -48,11 +49,12 @@ public class MysqlMicroOssProvider implements MicroOssProvider {
     public void createTable(CreateTableCommand command) throws MicroOssException {
         try (Connection conn = getConnection()) {
             StringBuffer sb = new StringBuffer("CREATE TABLE IF NOT EXISTS ");
-            sb.append(command.getTableDefinition().getTableName());
+            TableDefinition tableDefinition = command.getTableDefinition();
+            sb.append(tableDefinition.getTableName());
             sb.append("(");
             PrimaryKeyDefinition primaryKeyDefinition = new PrimaryKeyDefinition();
             List<TableElementDefinition> tableElementDefinitions = new ArrayList<>();
-            for (FieldDefinition fieldDefinition : command.getTableDefinition().getFields()) {
+            for (FieldDefinition fieldDefinition : tableDefinition.getFields()) {
                 boolean isPrimaryKey = fieldDefinition.getPrimaryKey() > 0;
                 if (isPrimaryKey) {
                     primaryKeyDefinition.getFiledNames().put(fieldDefinition.getPrimaryKey(), fieldDefinition.getName());
@@ -61,7 +63,8 @@ public class MysqlMicroOssProvider implements MicroOssProvider {
             }
             tableElementDefinitions.add(primaryKeyDefinition);
             sb.append(StringUtils.join(tableElementDefinitions, ","));
-            sb.append(");");
+            String tableComment = StringUtils.isBlank(tableDefinition.getComment()) ? "" : tableDefinition.getComment().replaceAll("'", "''");
+            sb.append(String.format(") COMMENT='%s';", tableComment));
             String sql = sb.toString();
             log.debug("executeUpdate> {}", sql);
             conn.createStatement().executeUpdate(sql);
