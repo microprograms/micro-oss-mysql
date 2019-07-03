@@ -4,10 +4,12 @@ import com.github.microprograms.micro_oss_core.model.FieldDefinition.FieldTypeEn
 
 public class TableColumnDefinition implements TableElementDefinition {
 	private String name;
+	private String comment;
 	private String type;
 
-	public TableColumnDefinition(String name, String type) {
+	public TableColumnDefinition(String name, String comment, String type) {
 		this.name = name;
+		this.comment = comment;
 		this.type = type;
 	}
 
@@ -28,7 +30,7 @@ public class TableColumnDefinition implements TableElementDefinition {
 
 	@Override
 	public String toText() {
-		return "`" + name + "` " + type;
+		return String.format("`%s` %s COMMENT '%s'", name, type, comment.replaceAll("'", "''"));
 	}
 
 	@Override

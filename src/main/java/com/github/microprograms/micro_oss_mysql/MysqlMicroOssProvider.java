@@ -57,7 +57,7 @@ public class MysqlMicroOssProvider implements MicroOssProvider {
                 if (isPrimaryKey) {
                     primaryKeyDefinition.getFiledNames().put(fieldDefinition.getPrimaryKey(), fieldDefinition.getName());
                 }
-                tableElementDefinitions.add(new TableColumnDefinition(fieldDefinition.getName(), TableColumnDefinition.getMysqlDataType(fieldDefinition.getType(), isPrimaryKey)));
+                tableElementDefinitions.add(new TableColumnDefinition(fieldDefinition.getName(), fieldDefinition.getComment(), TableColumnDefinition.getMysqlDataType(fieldDefinition.getType(), isPrimaryKey)));
             }
             tableElementDefinitions.add(primaryKeyDefinition);
             sb.append(StringUtils.join(tableElementDefinitions, ","));
