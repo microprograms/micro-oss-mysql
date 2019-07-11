@@ -23,6 +23,10 @@ public class TableColumnDefinition implements TableElementDefinition {
 			return "bigint";
 		case string_type:
 			return isPrimaryKey ? "varchar(99)" : "text";
+		case text_type:
+			return isPrimaryKey ? "varchar(99)" : "text";
+		case sqldatetime_type:
+			return "datetime";
 		case datetime_type:
 			return "datetime";
 		default:
