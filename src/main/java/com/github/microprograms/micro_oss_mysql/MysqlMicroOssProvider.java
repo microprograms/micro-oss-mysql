@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.github.microprograms.micro_oss_core.MicroOssConfig;
 import com.github.microprograms.micro_oss_core.MicroOssProvider;
 import com.github.microprograms.micro_oss_core.QueryResult;
 import com.github.microprograms.micro_oss_core.Transaction;
@@ -21,7 +22,6 @@ import com.github.microprograms.micro_oss_core.exception.MicroOssException;
 import com.github.microprograms.micro_oss_core.model.Entity;
 import com.github.microprograms.micro_oss_core.model.Field;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
-import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
 import com.github.microprograms.micro_oss_core.model.dml.query.SelectCommand;
@@ -36,13 +36,23 @@ public class MysqlMicroOssProvider implements MicroOssProvider {
 	private static final Logger log = LoggerFactory.getLogger(MysqlMicroOssProvider.class);
 
 	private DataSource dataSource;
+	private MicroOssConfig config;
 
-	public MysqlMicroOssProvider(DataSource dataSource) {
+	public MysqlMicroOssProvider(DataSource dataSource, MicroOssConfig config) {
 		this.dataSource = dataSource;
+		this.config = config;
+	}
+
+	@Override
+	public MicroOssConfig getConfig() {
+		return config;
 	}
 
 	protected String getTableName(Class<?> clz) {
-		return clz.getSimpleName();
+		if (StringUtils.isBlank(config.getTablePrefix())) {
+			return clz.getSimpleName();
+		}
+		return config.getTablePrefix() + clz.getSimpleName();
 	}
 
 	protected Entity buildEntity(Object javaObject) {
@@ -55,8 +65,9 @@ public class MysqlMicroOssProvider implements MicroOssProvider {
 	}
 
 	@Override
-	public void createTable(CreateTableCommand command) throws MicroOssException {
+	public void createTable(Class<?> clz, CreateTableCommand command) throws MicroOssException {
 		try (Connection conn = dataSource.getConnection()) {
+			command.getTableDefinition().setTableName(getTableName(clz));
 			String sql = MysqlUtils.buildSql(command);
 			log.debug("createTable> {}", sql);
 			conn.createStatement().executeUpdate(sql);
@@ -66,9 +77,9 @@ public class MysqlMicroOssProvider implements MicroOssProvider {
 	}
 
 	@Override
-	public void dropTable(DropTableCommand command) throws MicroOssException {
+	public void dropTable(Class<?> clz) throws MicroOssException {
 		try (Connection conn = dataSource.getConnection()) {
-			String sql = String.format("DROP TABLE IF EXISTS %s;", command.getTableName());
+			String sql = String.format("DROP TABLE IF EXISTS %s;", getTableName(clz));
 			log.debug("dropTable> {}", sql);
 			conn.createStatement().executeUpdate(sql);
 		} catch (Exception e) {
