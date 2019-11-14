@@ -5,9 +5,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.microprograms.micro_oss_core.MicroOssConfig;
 import com.github.microprograms.micro_oss_core.MicroOssProvider;
 import com.github.microprograms.micro_oss_core.QueryResult;
@@ -19,19 +16,20 @@ import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
 import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
 
-public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements MicroOssProvider {
-	private static final Logger log = LoggerFactory.getLogger(MysqlMicroOssProvider.class);
+public class TransactionMysqlMicroOssProvider extends RawMysqlMicroOssProvider implements MicroOssProvider {
 
+	private Connection conn;
 	private DataSource dataSource;
 
-	public MysqlMicroOssProvider(DataSource dataSource, MicroOssConfig config) {
+	public TransactionMysqlMicroOssProvider(Connection conn, DataSource dataSource, MicroOssConfig config) {
 		super(config);
+		this.conn = conn;
 		this.dataSource = dataSource;
 	}
 
 	@Override
 	public void createTable(Class<?> clz, CreateTableCommand command) throws MicroOssException {
-		try (Connection conn = dataSource.getConnection()) {
+		try {
 			createTable(conn, clz, command);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
@@ -40,7 +38,7 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 
 	@Override
 	public void dropTable(Class<?> clz) throws MicroOssException {
-		try (Connection conn = dataSource.getConnection()) {
+		try {
 			dropTable(conn, clz);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
@@ -49,7 +47,7 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 
 	@Override
 	public int insertObject(Object object) throws MicroOssException {
-		try (Connection conn = dataSource.getConnection()) {
+		try {
 			return insertObject(conn, object);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
@@ -58,7 +56,7 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 
 	@Override
 	public int updateObject(Class<?> clz, List<Field> fields, Condition where) throws MicroOssException {
-		try (Connection conn = dataSource.getConnection()) {
+		try {
 			return updateObject(conn, clz, fields, where);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
@@ -67,7 +65,7 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 
 	@Override
 	public int deleteObject(Class<?> clz, Condition where) throws MicroOssException {
-		try (Connection conn = dataSource.getConnection()) {
+		try {
 			return deleteObject(conn, clz, where);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
@@ -76,7 +74,7 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 
 	@Override
 	public int queryCount(Class<?> clz, Condition where) throws MicroOssException {
-		try (Connection conn = dataSource.getConnection()) {
+		try {
 			return queryCount(conn, clz, where);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
@@ -102,7 +100,7 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 	@Override
 	public <T> QueryResult<T> query(Class<T> clz, List<String> fieldNames, Condition where, List<Sort> sorts,
 			PagerRequest pager) throws MicroOssException {
-		try (Connection conn = dataSource.getConnection()) {
+		try {
 			return query(conn, clz, fieldNames, where, sorts, pager);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
@@ -113,5 +111,4 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 	public void execute(Transaction transaction) throws MicroOssException {
 		execute(dataSource, transaction);
 	}
-
 }
