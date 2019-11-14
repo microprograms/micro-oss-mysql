@@ -15,6 +15,7 @@ import com.github.microprograms.micro_oss_core.Transaction;
 import com.github.microprograms.micro_oss_core.exception.MicroOssException;
 import com.github.microprograms.micro_oss_core.model.Field;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
+import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
 import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
@@ -30,18 +31,18 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 	}
 
 	@Override
-	public void createTable(Class<?> clz, CreateTableCommand command) throws MicroOssException {
+	public void createTable(CreateTableCommand command) throws MicroOssException {
 		try (Connection conn = dataSource.getConnection()) {
-			createTable(conn, clz, command);
+			createTable(conn, command);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
 		}
 	}
 
 	@Override
-	public void dropTable(Class<?> clz) throws MicroOssException {
+	public void dropTable(DropTableCommand command) throws MicroOssException {
 		try (Connection conn = dataSource.getConnection()) {
-			dropTable(conn, clz);
+			dropTable(conn, command);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
 		}

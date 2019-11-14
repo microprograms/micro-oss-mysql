@@ -21,6 +21,7 @@ import com.github.microprograms.micro_oss_core.exception.MicroOssException;
 import com.github.microprograms.micro_oss_core.model.Entity;
 import com.github.microprograms.micro_oss_core.model.Field;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
+import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
 import com.github.microprograms.micro_oss_core.model.dml.query.SelectCommand;
@@ -60,15 +61,14 @@ public class RawMysqlMicroOssProvider {
 		return new Entity(getTableName(javaObject.getClass()), fields);
 	}
 
-	public void createTable(Connection conn, Class<?> clz, CreateTableCommand command) throws Exception {
-		command.getTableDefinition().setTableName(getTableName(clz));
+	public void createTable(Connection conn, CreateTableCommand command) throws Exception {
 		String sql = MysqlUtils.buildSql(command);
 		log.debug("createTable> {}", sql);
 		conn.createStatement().executeUpdate(sql);
 	}
 
-	public void dropTable(Connection conn, Class<?> clz) throws Exception {
-		String sql = String.format("DROP TABLE IF EXISTS %s;", getTableName(clz));
+	public void dropTable(Connection conn, DropTableCommand command) throws Exception {
+		String sql = String.format("DROP TABLE IF EXISTS %s;", command.getTableName());
 		log.debug("dropTable> {}", sql);
 		conn.createStatement().executeUpdate(sql);
 	}
