@@ -136,16 +136,16 @@ public abstract class RawMysqlMicroOssProvider {
 	public void execute(DataSource dataSource, Transaction transaction) throws MicroOssException {
 		Connection conn = null;
 		try {
-			log.debug("transaction execute> {}", transaction);
+			log.debug("transaction execute> {}", transaction.getTransactionId());
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			transaction.execute(new TransactionMysqlMicroOssProvider(conn, dataSource, getConfig()));
 			conn.commit();
-			log.debug("transaction commit> {}", transaction);
+			log.debug("transaction commit> {}", transaction.getTransactionId());
 		} catch (Exception e) {
 			try {
 				conn.rollback();
-				log.debug("transaction rollback> {}", transaction);
+				log.debug("transaction rollback> {}", transaction.getTransactionId());
 			} catch (SQLException sqlException) {
 				// ignore
 				log.warn("", sqlException);

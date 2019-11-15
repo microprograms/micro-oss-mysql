@@ -26,7 +26,6 @@ import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.UpdateCommand;
 
 public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements MicroOssProvider {
-	private static final Logger log = LoggerFactory.getLogger(MysqlMicroOssProvider.class);
 
 	private DataSource dataSource;
 
