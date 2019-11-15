@@ -101,9 +101,15 @@ public class MysqlUtils {
 
 	public static String buildSql(SelectCountCommand command) {
 		StringBuffer sb = new StringBuffer("SELECT COUNT(*) AS count FROM ").append(command.getTableName());
-		String whereCondition = MysqlUtils.parseCondition(command.getWhere());
-		if (StringUtils.isNotBlank(whereCondition)) {
-			sb.append(" WHERE ").append(whereCondition);
+		List<Join> joins = command.getJoins();
+		if (joins != null) {
+			for (Join join : joins) {
+				sb.append(" ").append(parseJoin(join));
+			}
+		}
+		String where = MysqlUtils.parseCondition(command.getWhere());
+		if (StringUtils.isNotBlank(where)) {
+			sb.append(" WHERE ").append(where);
 		}
 		return sb.append(";").toString();
 	}
