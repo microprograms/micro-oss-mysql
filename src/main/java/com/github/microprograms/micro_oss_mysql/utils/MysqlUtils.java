@@ -16,6 +16,7 @@ import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition.ComplexCondition;
+import com.github.microprograms.micro_oss_core.model.dml.query.Condition.RawCondition;
 import com.github.microprograms.micro_oss_core.model.dml.query.Join;
 import com.github.microprograms.micro_oss_core.model.dml.query.Join.TypeEnum;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
@@ -175,6 +176,8 @@ public class MysqlUtils {
 				}
 			}
 			return StringUtils.join(childStringList, getSeparator(complex.getType()));
+		} else if (where instanceof RawCondition) {
+			return String.format("%s %s", where.getKey(), where.getValue());
 		} else {
 			return String.format("%s %s", where.getKey(), getSqlValue(where.getValue()));
 		}
