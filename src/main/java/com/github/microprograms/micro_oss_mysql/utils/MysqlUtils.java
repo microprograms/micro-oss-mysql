@@ -13,12 +13,14 @@ import com.github.microprograms.micro_oss_core.model.Field;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition;
 import com.github.microprograms.micro_oss_core.model.TableDefinition;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
+import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition.ComplexCondition;
 import com.github.microprograms.micro_oss_core.model.dml.query.Join;
 import com.github.microprograms.micro_oss_core.model.dml.query.Join.TypeEnum;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
 import com.github.microprograms.micro_oss_core.model.dml.query.SelectCommand;
+import com.github.microprograms.micro_oss_core.model.dml.query.SelectCountCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
 import com.github.microprograms.micro_oss_core.model.dml.update.DeleteCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
@@ -51,6 +53,10 @@ public class MysqlUtils {
 				: tableDefinition.getComment().replaceAll("'", "''");
 		sb.append(String.format(") COMMENT='%s';", tableComment));
 		return sb.toString();
+	}
+
+	public static String buildSql(DropTableCommand command) {
+		return String.format("DROP TABLE IF EXISTS %s;", command.getTableName());
 	}
 
 	public static String buildSql(InsertCommand command) {
@@ -88,6 +94,15 @@ public class MysqlUtils {
 		String where = parseCondition(command.getWhere());
 		if (StringUtils.isNoneBlank(where)) {
 			sb.append(" WHERE ").append(where);
+		}
+		return sb.append(";").toString();
+	}
+
+	public static String buildSql(SelectCountCommand command) {
+		StringBuffer sb = new StringBuffer("SELECT COUNT(*) AS count FROM ").append(command.getTableName());
+		String whereCondition = MysqlUtils.parseCondition(command.getWhere());
+		if (StringUtils.isNotBlank(whereCondition)) {
+			sb.append(" WHERE ").append(whereCondition);
 		}
 		return sb.append(";").toString();
 	}

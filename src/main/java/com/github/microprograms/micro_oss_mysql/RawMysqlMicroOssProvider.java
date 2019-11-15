@@ -68,7 +68,7 @@ public abstract class RawMysqlMicroOssProvider {
 	}
 
 	public void dropTable(Connection conn, DropTableCommand command) throws Exception {
-		String sql = String.format("DROP TABLE IF EXISTS %s;", command.getTableName());
+		String sql = MysqlUtils.buildSql(command);
 		log.debug("dropTable> {}", sql);
 		conn.createStatement().executeUpdate(sql);
 	}
@@ -104,12 +104,7 @@ public abstract class RawMysqlMicroOssProvider {
 	}
 
 	public int queryCount(Connection conn, SelectCountCommand command) throws Exception {
-		StringBuffer sb = new StringBuffer("SELECT COUNT(*) AS count FROM ").append(command.getTableName());
-		String whereCondition = MysqlUtils.parseCondition(command.getWhere());
-		if (StringUtils.isNotBlank(whereCondition)) {
-			sb.append(" WHERE ").append(whereCondition).append(";");
-		}
-		String sql = sb.toString();
+		String sql = MysqlUtils.buildSql(command);
 		log.debug("executeQuery> {}", sql);
 		ResultSet rs = conn.createStatement().executeQuery(sql);
 		rs.next();
