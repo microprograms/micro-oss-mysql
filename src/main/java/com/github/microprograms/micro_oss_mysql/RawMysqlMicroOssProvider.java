@@ -105,7 +105,7 @@ public class RawMysqlMicroOssProvider {
 
 	public int queryCount(Connection conn, SelectCountCommand command) throws Exception {
 		StringBuffer sb = new StringBuffer("SELECT COUNT(*) AS count FROM ").append(command.getTableName());
-		String whereCondition = MysqlUtils.parse(command.getWhere());
+		String whereCondition = MysqlUtils.parseCondition(command.getWhere());
 		if (StringUtils.isNotBlank(whereCondition)) {
 			sb.append(" WHERE ").append(whereCondition).append(";");
 		}

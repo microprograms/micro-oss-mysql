@@ -15,6 +15,8 @@ import com.github.microprograms.micro_oss_core.model.TableDefinition;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition.ComplexCondition;
+import com.github.microprograms.micro_oss_core.model.dml.query.Join;
+import com.github.microprograms.micro_oss_core.model.dml.query.Join.TypeEnum;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
 import com.github.microprograms.micro_oss_core.model.dml.query.SelectCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
@@ -74,7 +76,7 @@ public class MysqlUtils {
 			pairs.add(String.format("%s=%s", getSqlField(x.getName()), getSqlValue(x.getValue())));
 		}
 		sb.append(" SET ").append(StringUtils.join(pairs, ","));
-		String where = MysqlUtils.parse(command.getWhere());
+		String where = parseCondition(command.getWhere());
 		if (StringUtils.isNotBlank(where)) {
 			sb.append(" WHERE ").append(where);
 		}
@@ -83,7 +85,7 @@ public class MysqlUtils {
 
 	public static String buildSql(DeleteCommand command) {
 		StringBuffer sb = new StringBuffer("DELETE FROM ").append(command.getTableName());
-		String where = MysqlUtils.parse(command.getWhere());
+		String where = parseCondition(command.getWhere());
 		if (StringUtils.isNoneBlank(where)) {
 			sb.append(" WHERE ").append(where);
 		}
@@ -95,22 +97,45 @@ public class MysqlUtils {
 		sb.append(command.getFieldNames() == null || command.getFieldNames().isEmpty() ? "*"
 				: StringUtils.join(command.getFieldNames(), ","));
 		sb.append(" FROM ").append(command.getTableName());
-		String where = MysqlUtils.parse(command.getWhere());
+		List<Join> joins = command.getJoins();
+		if (joins != null) {
+			for (Join join : joins) {
+				sb.append(" ").append(parseJoin(join));
+			}
+		}
+		String where = parseCondition(command.getWhere());
 		if (StringUtils.isNotBlank(where)) {
 			sb.append(" WHERE ").append(where);
 		}
-		String sort = MysqlUtils.parseSorts(command.getSorts());
+		String sort = parseSorts(command.getSorts());
 		if (StringUtils.isNotBlank(sort)) {
 			sb.append(" ORDER BY ").append(sort);
 		}
-		String pager = MysqlUtils.parse(command.getPager());
+		String pager = parsePager(command.getPager());
 		if (StringUtils.isNotBlank(pager)) {
 			sb.append(" ").append(pager);
 		}
 		return sb.append(";").toString();
 	}
 
-	public static String parse(Condition where) {
+	public static String parseJoin(Join join) {
+		StringBuffer sb = new StringBuffer();
+		if (TypeEnum.join == join.getType()) {
+			sb.append("JOIN");
+		} else if (TypeEnum.leftJoin == join.getType()) {
+			sb.append("LEFT JOIN");
+		} else {
+			throw new RuntimeException("Unsupported JOIN Type");
+		}
+		sb.append(" ").append(join.getTableName());
+		String condition = parseCondition(join.getCondition());
+		if (StringUtils.isNotBlank(condition)) {
+			sb.append(" ON ").append(condition);
+		}
+		return sb.toString();
+	}
+
+	public static String parseCondition(Condition where) {
 		if (null == where) {
 			return null;
 		} else if (where instanceof ComplexCondition) {
@@ -124,7 +149,7 @@ public class MysqlUtils {
 				if (null == child) {
 					continue;
 				}
-				String childString = parse(child);
+				String childString = parseCondition(child);
 				if (StringUtils.isBlank(childString)) {
 					continue;
 				}
@@ -143,11 +168,11 @@ public class MysqlUtils {
 	private static String getSeparator(ComplexCondition.TypeEnum type) {
 		switch (type) {
 		case and:
-			return " and ";
+			return " AND ";
 		case or:
-			return " or ";
+			return " OR ";
 		default:
-			throw new RuntimeException("Unsupported Type");
+			throw new RuntimeException("Unsupported Condition Type");
 		}
 	}
 
@@ -179,7 +204,7 @@ public class MysqlUtils {
 		return StringUtils.join(list, ",");
 	}
 
-	public static String parse(PagerRequest pagerRequest) {
+	public static String parsePager(PagerRequest pagerRequest) {
 		if (null == pagerRequest) {
 			return null;
 		}

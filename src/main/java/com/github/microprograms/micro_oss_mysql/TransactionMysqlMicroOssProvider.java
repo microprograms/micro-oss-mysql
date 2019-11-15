@@ -15,7 +15,12 @@ import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
+import com.github.microprograms.micro_oss_core.model.dml.query.SelectCommand;
+import com.github.microprograms.micro_oss_core.model.dml.query.SelectCountCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
+import com.github.microprograms.micro_oss_core.model.dml.update.DeleteCommand;
+import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
+import com.github.microprograms.micro_oss_core.model.dml.update.UpdateCommand;
 
 public class TransactionMysqlMicroOssProvider extends RawMysqlMicroOssProvider implements MicroOssProvider {
 
@@ -41,6 +46,51 @@ public class TransactionMysqlMicroOssProvider extends RawMysqlMicroOssProvider i
 	public void dropTable(DropTableCommand command) throws MicroOssException {
 		try {
 			dropTable(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public int insertObject(InsertCommand command) throws MicroOssException {
+		try {
+			return insertObject(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public int updateObject(UpdateCommand command) throws MicroOssException {
+		try {
+			return updateObject(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public int deleteObject(DeleteCommand command) throws MicroOssException {
+		try {
+			return deleteObject(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public int queryCount(SelectCountCommand command) throws MicroOssException {
+		try {
+			return queryCount(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public QueryResult<?> query(SelectCommand command) throws MicroOssException {
+		try {
+			return query(conn, command);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
 		}
