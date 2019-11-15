@@ -73,26 +73,37 @@ public class RawMysqlMicroOssProvider {
 		conn.createStatement().executeUpdate(sql);
 	}
 
+	public int insertObject(Connection conn, InsertCommand command) throws Exception {
+		String sql = MysqlUtils.buildSql(command);
+		log.debug("executeUpdate> {}", sql);
+		return conn.createStatement().executeUpdate(sql);
+	}
+
 	public int insertObject(Connection conn, Object object) throws Exception {
-		String sql = MysqlUtils.buildSql(new InsertCommand(buildEntity(object)));
+		return insertObject(conn, new InsertCommand(buildEntity(object)));
+	}
+
+	public int updateObject(Connection conn, UpdateCommand command) throws Exception {
+		String sql = MysqlUtils.buildSql(command);
 		log.debug("executeUpdate> {}", sql);
 		return conn.createStatement().executeUpdate(sql);
 	}
 
 	public int updateObject(Connection conn, Class<?> clz, List<Field> fields, Condition where) throws Exception {
-		String sql = MysqlUtils.buildSql(new UpdateCommand(getTableName(clz), fields, where));
+		return updateObject(conn, new UpdateCommand(getTableName(clz), fields, where));
+	}
+
+	public int deleteObject(Connection conn, DeleteCommand command) throws Exception {
+		String sql = MysqlUtils.buildSql(command);
 		log.debug("executeUpdate> {}", sql);
 		return conn.createStatement().executeUpdate(sql);
 	}
 
 	public int deleteObject(Connection conn, Class<?> clz, Condition where) throws Exception {
-		String sql = MysqlUtils.buildSql(new DeleteCommand(getTableName(clz), where));
-		log.debug("executeUpdate> {}", sql);
-		return conn.createStatement().executeUpdate(sql);
+		return deleteObject(conn, new DeleteCommand(getTableName(clz), where));
 	}
 
-	public int queryCount(Connection conn, Class<?> clz, Condition where) throws Exception {
-		SelectCountCommand command = new SelectCountCommand(getTableName(clz), where);
+	public int queryCount(Connection conn, SelectCountCommand command) throws Exception {
 		StringBuffer sb = new StringBuffer("SELECT COUNT(*) AS count FROM ").append(command.getTableName());
 		String whereCondition = MysqlUtils.parse(command.getWhere());
 		if (StringUtils.isNotBlank(whereCondition)) {
@@ -103,6 +114,18 @@ public class RawMysqlMicroOssProvider {
 		ResultSet rs = conn.createStatement().executeQuery(sql);
 		rs.next();
 		return rs.getObject("count", Integer.class);
+	}
+
+	public int queryCount(Connection conn, Class<?> clz, Condition where) throws Exception {
+		return queryCount(conn, new SelectCountCommand(getTableName(clz), where));
+	}
+
+	public QueryResult<?> query(Connection conn, SelectCommand command) throws Exception {
+		String sql = MysqlUtils.buildSql(command);
+		log.debug("executeQuery> {}", sql);
+		List<Entity> entities = MysqlUtils.getEntityList(command.getTableName(),
+				conn.createStatement().executeQuery(sql));
+		return new QueryResult<>(entities);
 	}
 
 	public <T> QueryResult<T> query(Connection conn, Class<T> clz, List<String> fieldNames, Condition where,

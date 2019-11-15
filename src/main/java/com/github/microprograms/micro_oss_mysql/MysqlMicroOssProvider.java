@@ -18,7 +18,12 @@ import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
+import com.github.microprograms.micro_oss_core.model.dml.query.SelectCommand;
+import com.github.microprograms.micro_oss_core.model.dml.query.SelectCountCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
+import com.github.microprograms.micro_oss_core.model.dml.update.DeleteCommand;
+import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
+import com.github.microprograms.micro_oss_core.model.dml.update.UpdateCommand;
 
 public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements MicroOssProvider {
 	private static final Logger log = LoggerFactory.getLogger(MysqlMicroOssProvider.class);
@@ -43,6 +48,51 @@ public class MysqlMicroOssProvider extends RawMysqlMicroOssProvider implements M
 	public void dropTable(DropTableCommand command) throws MicroOssException {
 		try (Connection conn = dataSource.getConnection()) {
 			dropTable(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public int insertObject(InsertCommand command) throws MicroOssException {
+		try (Connection conn = dataSource.getConnection()) {
+			return insertObject(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public int updateObject(UpdateCommand command) throws MicroOssException {
+		try (Connection conn = dataSource.getConnection()) {
+			return updateObject(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public int deleteObject(DeleteCommand command) throws MicroOssException {
+		try (Connection conn = dataSource.getConnection()) {
+			return deleteObject(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public int queryCount(SelectCountCommand command) throws MicroOssException {
+		try (Connection conn = dataSource.getConnection()) {
+			return queryCount(conn, command);
+		} catch (Exception e) {
+			throw new MicroOssException(e);
+		}
+	}
+
+	@Override
+	public QueryResult<?> query(SelectCommand command) throws MicroOssException {
+		try (Connection conn = dataSource.getConnection()) {
+			return query(conn, command);
 		} catch (Exception e) {
 			throw new MicroOssException(e);
 		}
