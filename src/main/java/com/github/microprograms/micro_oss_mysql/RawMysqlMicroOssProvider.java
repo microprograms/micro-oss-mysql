@@ -32,7 +32,7 @@ import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.UpdateCommand;
 import com.github.microprograms.micro_oss_mysql.utils.MysqlUtils;
 
-public class RawMysqlMicroOssProvider {
+public abstract class RawMysqlMicroOssProvider {
 	private static final Logger log = LoggerFactory.getLogger(RawMysqlMicroOssProvider.class);
 
 	private MicroOssConfig config;

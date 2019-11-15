@@ -22,7 +22,7 @@ import com.github.microprograms.micro_oss_core.model.dml.update.DeleteCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.UpdateCommand;
 
-public class TransactionMysqlMicroOssProvider extends RawMysqlMicroOssProvider implements MicroOssProvider {
+class TransactionMysqlMicroOssProvider extends RawMysqlMicroOssProvider implements MicroOssProvider {
 
 	private Connection conn;
 	private DataSource dataSource;
