@@ -205,6 +205,9 @@ public class MysqlUtils {
 	}
 
 	private static String getSqlValue(Object value) {
+		if (null == value) {
+			return null;
+		}
 		if (value instanceof String) {
 			return "'" + value.toString().replaceAll("'", "''") + "'";
 		}
