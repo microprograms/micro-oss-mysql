@@ -146,6 +146,8 @@ public class MysqlUtils {
 			sb.append("JOIN");
 		} else if (TypeEnum.leftJoin == join.getType()) {
 			sb.append("LEFT JOIN");
+		} else if (TypeEnum.rightJoin == join.getType()) {
+			sb.append("RIGHT JOIN");
 		} else {
 			throw new RuntimeException("Unsupported JOIN Type");
 		}
