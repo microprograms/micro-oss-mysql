@@ -5,9 +5,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.microprograms.micro_oss_core.MicroOssConfig;
 import com.github.microprograms.micro_oss_core.MicroOssProvider;
 import com.github.microprograms.micro_oss_core.QueryResult;

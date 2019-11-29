@@ -3,17 +3,10 @@ package com.github.microprograms.micro_oss_mysql;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.github.microprograms.micro_oss_core.MicroOssConfig;
 import com.github.microprograms.micro_oss_core.QueryResult;
 import com.github.microprograms.micro_oss_core.Transaction;
@@ -23,6 +16,7 @@ import com.github.microprograms.micro_oss_core.model.Field;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
+import com.github.microprograms.micro_oss_core.model.dml.query.Join;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
 import com.github.microprograms.micro_oss_core.model.dml.query.SelectCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.SelectCountCommand;
@@ -30,7 +24,11 @@ import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
 import com.github.microprograms.micro_oss_core.model.dml.update.DeleteCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.UpdateCommand;
+import com.github.microprograms.micro_oss_core.utils.MicroOssUtils;
 import com.github.microprograms.micro_oss_mysql.utils.MysqlUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class RawMysqlMicroOssProvider {
 	private static final Logger log = LoggerFactory.getLogger(RawMysqlMicroOssProvider.class);
@@ -45,65 +43,72 @@ public abstract class RawMysqlMicroOssProvider {
 		return config;
 	}
 
-	protected String getTableName(Class<?> clz) {
-		if (StringUtils.isBlank(config.getTablePrefix())) {
-			return clz.getSimpleName();
-		}
-		return config.getTablePrefix() + clz.getSimpleName();
+	private String _getTableName(Class<?> clz) {
+		return MicroOssUtils.getTableName(clz);
 	}
 
-	protected Entity buildEntity(Object javaObject) {
-		JSONObject json = (JSONObject) JSON.toJSON(javaObject);
-		List<Field> fields = new ArrayList<>();
-		for (String key : json.keySet()) {
-			fields.add(new Field(key, json.get(key)));
-		}
-		return new Entity(getTableName(javaObject.getClass()), fields);
+	private String _getTableNameWithPrefix(String tableName) {
+		return MicroOssUtils.getTableNameWithPrefix(tableName, config.getTablePrefix());
+	}
+
+	private Entity _buildEntity(Object javaObject) {
+		return MicroOssUtils.buildEntity(javaObject);
 	}
 
 	public void createTable(Connection conn, CreateTableCommand command) throws Exception {
+		command.getTableDefinition().setTableName(_getTableNameWithPrefix(command.getTableDefinition().getTableName()));
 		String sql = MysqlUtils.buildSql(command);
 		log.debug("createTable> {}", sql);
 		conn.createStatement().executeUpdate(sql);
 	}
 
 	public void dropTable(Connection conn, DropTableCommand command) throws Exception {
+		command.setTableName(_getTableNameWithPrefix(command.getTableName()));
 		String sql = MysqlUtils.buildSql(command);
 		log.debug("dropTable> {}", sql);
 		conn.createStatement().executeUpdate(sql);
 	}
 
 	public int insertObject(Connection conn, InsertCommand command) throws Exception {
+		command.getEntity().setTableName(_getTableNameWithPrefix(command.getEntity().getTableName()));
 		String sql = MysqlUtils.buildSql(command);
 		log.debug("executeUpdate> {}", sql);
 		return conn.createStatement().executeUpdate(sql);
 	}
 
 	public int insertObject(Connection conn, Object object) throws Exception {
-		return insertObject(conn, new InsertCommand(buildEntity(object)));
+		return insertObject(conn, new InsertCommand(_buildEntity(object)));
 	}
 
 	public int updateObject(Connection conn, UpdateCommand command) throws Exception {
+		command.setTableName(_getTableNameWithPrefix(command.getTableName()));
 		String sql = MysqlUtils.buildSql(command);
 		log.debug("executeUpdate> {}", sql);
 		return conn.createStatement().executeUpdate(sql);
 	}
 
 	public int updateObject(Connection conn, Class<?> clz, List<Field> fields, Condition where) throws Exception {
-		return updateObject(conn, new UpdateCommand(getTableName(clz), fields, where));
+		return updateObject(conn, new UpdateCommand(_getTableName(clz), fields, where));
 	}
 
 	public int deleteObject(Connection conn, DeleteCommand command) throws Exception {
+		command.setTableName(_getTableNameWithPrefix(command.getTableName()));
 		String sql = MysqlUtils.buildSql(command);
 		log.debug("executeUpdate> {}", sql);
 		return conn.createStatement().executeUpdate(sql);
 	}
 
 	public int deleteObject(Connection conn, Class<?> clz, Condition where) throws Exception {
-		return deleteObject(conn, new DeleteCommand(getTableName(clz), where));
+		return deleteObject(conn, new DeleteCommand(_getTableName(clz), where));
 	}
 
 	public int queryCount(Connection conn, SelectCountCommand command) throws Exception {
+		command.setTableName(_getTableNameWithPrefix(command.getTableName()));
+		if (command.getJoins() != null) {
+			for (Join x : command.getJoins()) {
+				x.setTableName(_getTableNameWithPrefix(x.getTableName()));
+			}
+		}
 		String sql = MysqlUtils.buildSql(command);
 		log.debug("executeQuery> {}", sql);
 		ResultSet rs = conn.createStatement().executeQuery(sql);
@@ -112,10 +117,16 @@ public abstract class RawMysqlMicroOssProvider {
 	}
 
 	public int queryCount(Connection conn, Class<?> clz, Condition where) throws Exception {
-		return queryCount(conn, new SelectCountCommand(getTableName(clz), where));
+		return queryCount(conn, new SelectCountCommand(_getTableName(clz), where));
 	}
 
-	public QueryResult<?> query(Connection conn, SelectCommand command) throws Exception {
+	public <T> QueryResult<T> query(Connection conn, SelectCommand command) throws Exception {
+		command.setTableName(_getTableNameWithPrefix(command.getTableName()));
+		if (command.getJoins() != null) {
+			for (Join x : command.getJoins()) {
+				x.setTableName(_getTableNameWithPrefix(x.getTableName()));
+			}
+		}
 		String sql = MysqlUtils.buildSql(command);
 		log.debug("executeQuery> {}", sql);
 		List<Entity> entities = MysqlUtils.getEntityList(command.getTableName(),
@@ -125,12 +136,7 @@ public abstract class RawMysqlMicroOssProvider {
 
 	public <T> QueryResult<T> query(Connection conn, Class<T> clz, List<String> fieldNames, Condition where,
 			List<Sort> sorts, PagerRequest pager) throws Exception {
-		SelectCommand command = new SelectCommand(getTableName(clz), fieldNames, where, sorts, pager);
-		String sql = MysqlUtils.buildSql(command);
-		log.debug("executeQuery> {}", sql);
-		List<Entity> entities = MysqlUtils.getEntityList(command.getTableName(),
-				conn.createStatement().executeQuery(sql));
-		return new QueryResult<>(entities, clz);
+		return query(conn, new SelectCommand(_getTableName(clz), fieldNames, where, sorts, pager));
 	}
 
 	public void execute(DataSource dataSource, Transaction transaction) throws MicroOssException {
