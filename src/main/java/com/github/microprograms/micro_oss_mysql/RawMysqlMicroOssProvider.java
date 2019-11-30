@@ -136,7 +136,9 @@ public abstract class RawMysqlMicroOssProvider {
 
 	public <T> QueryResult<T> query(Connection conn, Class<T> clz, List<String> fieldNames, Condition where,
 			List<Sort> sorts, PagerRequest pager) throws Exception {
-		return query(conn, new SelectCommand(_getTableName(clz), fieldNames, where, sorts, pager));
+		QueryResult<T> queryResult = query(conn,
+				new SelectCommand(_getTableName(clz), fieldNames, where, sorts, pager));
+		return queryResult.clz(clz);
 	}
 
 	public void execute(DataSource dataSource, Transaction transaction) throws MicroOssException {
