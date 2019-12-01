@@ -6,8 +6,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.github.microprograms.micro_oss_core.model.Entity;
 import com.github.microprograms.micro_oss_core.model.Field;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition;
@@ -29,6 +27,8 @@ import com.github.microprograms.micro_oss_core.model.dml.update.UpdateCommand;
 import com.github.microprograms.micro_oss_mysql.model.ddl.PrimaryKeyDefinition;
 import com.github.microprograms.micro_oss_mysql.model.ddl.TableColumnDefinition;
 import com.github.microprograms.micro_oss_mysql.model.ddl.TableElementDefinition;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class MysqlUtils {
 
@@ -228,7 +228,7 @@ public class MysqlUtils {
 		}
 		List<String> list = new ArrayList<>();
 		for (Sort x : sorts) {
-			list.add(String.format("%s %s", getSqlField(x.getFieldName()), x.getType()));
+			list.add(String.format("%s %s", x.getFieldName(), x.getType()));
 		}
 		return StringUtils.join(list, ",");
 	}
